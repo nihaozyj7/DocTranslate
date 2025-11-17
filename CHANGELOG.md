@@ -1,5 +1,6 @@
 ### v0.0.11 (2025-11-16)
 - 添加单次翻译功能 @[添加单个翻译的按钮](https://github.com/nihaozyj7/DocTranslate/issues/2)
+
 ![介绍](<assets/CHANGELOG/25y11m17d 22H32M03S.gif>)
 
 ### v0.0.10 (2025-11-16)
