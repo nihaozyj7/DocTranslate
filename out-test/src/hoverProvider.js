@@ -117,7 +117,7 @@ function createHoverProvider() {
                 // 防止同一文本重复翻译
                 if (!translating.has(hash)) {
                     translating.add(hash);
-                    (0, translation_1.translateText)(original).then(result => {
+                    (0, translation_1.translateText)(original, document, position).then(result => {
                         translating.delete(hash);
                         // 将翻译结果保存到缓存
                         cache_1.translationCache.set(hash, {

@@ -73,7 +73,16 @@ function registerCommands(context) {
             return;
         const original = Buffer.from(encoded, 'base64').toString('utf-8');
         const hash = (0, utils_1.md5)(original);
-        await (0, translation_1.forceRetranslate)(original, hash);
+        // 尝试获取当前编辑器的文档和位置，用于上下文提取
+        const activeEditor = vscode.window.activeTextEditor;
+        let document = undefined;
+        let position = undefined;
+        if (activeEditor) {
+            document = activeEditor.document;
+            position = activeEditor.selection.active; // 使用当前光标位置
+        }
+        // 重新翻译，尝试使用当前文档上下文
+        await (0, translation_1.forceRetranslate)(original, hash, document, position);
         vscode.commands.executeCommand('editor.action.showHover');
     });
     const showCache = vscode.commands.registerCommand('hoverTranslator.showCache', () => (0, cacheView_1.openCacheView)(context));

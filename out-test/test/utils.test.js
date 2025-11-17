@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = __importStar(require("assert"));
+const vscode = __importStar(require("vscode"));
 const utils_1 = require("../src/utils");
 suite('Utils Test Suite', () => {
     test('md5 function should generate a valid hash', () => {
@@ -86,6 +87,140 @@ suite('Utils Test Suite', () => {
                 done();
             }, 50);
         }, 5);
+    });
+    test('getContextAround should extract context around position correctly', () => {
+        // Create a mock document
+        const content = [
+            'function example() {',
+            '  const x = 1;',
+            '  const y = 2;',
+            '  return x + y;',
+            '}',
+            '',
+            'console.log("hello");'
+        ].join('\n');
+        // Create a mock TextDocument
+        const document = {
+            lineAt: (lineNumber) => {
+                const lines = content.split('\n');
+                return {
+                    text: lines[lineNumber],
+                    lineNumber: lineNumber,
+                    range: new vscode.Range(lineNumber, 0, lineNumber, lines[lineNumber].length)
+                };
+            },
+            lineCount: content.split('\n').length
+        };
+        // Test getting context around line 2 (const y = 2;)
+        const position = new vscode.Position(2, 0);
+        const context = (0, utils_1.getContextAround)(document, position, 1, 1000); // 1 line each side
+        const expected = [
+            '  const x = 1;',
+            '  const y = 2;',
+            '  return x + y;'
+        ].join('\n');
+        assert.strictEqual(context, expected);
+    });
+    test('getContextAround should handle edge cases (beginning of file)', () => {
+        const content = [
+            'function example() {',
+            '  const x = 1;',
+            '  const y = 2;',
+            '  return x + y;',
+            '}'
+        ].join('\n');
+        const document = {
+            lineAt: (lineNumber) => {
+                const lines = content.split('\n');
+                return {
+                    text: lines[lineNumber],
+                    lineNumber: lineNumber,
+                    range: new vscode.Range(lineNumber, 0, lineNumber, lines[lineNumber].length)
+                };
+            },
+            lineCount: content.split('\n').length
+        };
+        // Test getting context around line 0 (first line)
+        const position = new vscode.Position(0, 0);
+        const context = (0, utils_1.getContextAround)(document, position, 2, 1000); // 2 lines each side
+        const expected = [
+            'function example() {',
+            '  const x = 1;',
+            '  const y = 2;'
+        ].join('\n');
+        assert.strictEqual(context, expected);
+    });
+    test('getContextAround should handle edge cases (end of file)', () => {
+        const content = [
+            'function example() {',
+            '  const x = 1;',
+            '  const y = 2;',
+            '  return x + y;',
+            '}'
+        ].join('\n');
+        const document = {
+            lineAt: (lineNumber) => {
+                const lines = content.split('\n');
+                return {
+                    text: lines[lineNumber],
+                    lineNumber: lineNumber,
+                    range: new vscode.Range(lineNumber, 0, lineNumber, lines[lineNumber].length)
+                };
+            },
+            lineCount: content.split('\n').length
+        };
+        // Test getting context around last line
+        const position = new vscode.Position(4, 0);
+        const context = (0, utils_1.getContextAround)(document, position, 2, 1000); // 2 lines each side
+        const expected = [
+            '  const y = 2;',
+            '  return x + y;',
+            '}'
+        ].join('\n');
+        assert.strictEqual(context, expected);
+    });
+    test('getContextAround should truncate content if it exceeds max length', () => {
+        const content = [
+            'function example() {',
+            '  const x = 1;', // 13 chars
+            '  const y = 2;', // 13 chars
+            '  return x + y;', // 15 chars
+            '}' // 1 char
+        ].join('\n');
+        const document = {
+            lineAt: (lineNumber) => {
+                const lines = content.split('\n');
+                return {
+                    text: lines[lineNumber],
+                    lineNumber: lineNumber,
+                    range: new vscode.Range(lineNumber, 0, lineNumber, lines[lineNumber].length)
+                };
+            },
+            lineCount: content.split('\n').length
+        };
+        // Test with a very small max length to trigger truncation
+        const position = new vscode.Position(2, 0); // at "const y = 2;" line
+        const context = (0, utils_1.getContextAround)(document, position, 2, 20); // Very small limit
+        // Should be truncated
+        assert.ok(context.length <= 20 + '... (上下文截断)'.length);
+        assert.ok(context.endsWith('... (上下文截断)'));
+    });
+    test('getContextAround should return empty string for empty document', () => {
+        const content = '';
+        const document = {
+            lineAt: (lineNumber) => {
+                const lines = content.split('\n');
+                return {
+                    text: lines[lineNumber],
+                    lineNumber: lineNumber,
+                    range: new vscode.Range(lineNumber, 0, lineNumber, lines[lineNumber].length)
+                };
+            },
+            lineCount: content.split('\n').length
+        };
+        const position = new vscode.Position(0, 0);
+        const context = (0, utils_1.getContextAround)(document, position, 2, 1000);
+        assert.strictEqual(context, '');
     });
 });
 //# sourceMappingURL=utils.test.js.map

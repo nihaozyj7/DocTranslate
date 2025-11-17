@@ -34,13 +34,7 @@ export function getTranslationConfig() {
  * @returns 翻译后的文本或错误信息
  */
 export async function translateText(text: string, document?: vscode.TextDocument, position?: vscode.Position): Promise<string> {
-  console.log('translateText 函数被调用') // 调试日志
   const config = getTranslationConfig()
-  console.log('当前配置:', {
-    includeContext: config.includeContext,
-    contextLines: config.contextLines,
-    maxContextLength: config.maxContextLength
-  }) // 调试日志
 
   const { baseURL, apiKey, model, promptTemplate, includeContext, contextLines, maxContextLength } = config
 
@@ -50,23 +44,18 @@ export async function translateText(text: string, document?: vscode.TextDocument
 
   let prompt: string
 
-  console.log('参数检查:', { includeContext, hasDocument: !!document, hasPosition: !!position }) // 调试日志
-
   // 如果启用了上下文功能且提供了文档和位置参数，则添加上下文
   if (includeContext && document && position) {
     const context = getContextAround(document, position, contextLines, maxContextLength)
     if (context.trim()) {
       // 使用增强的提示词，包含上下文信息
-      console.log('上下文翻译已启用，上下文内容:', context.substring(0, 200) + (context.length > 200 ? '...' : '')) // 调试日志
-      prompt = `参考上下文：\n\`\`\`\n${context}\n\`\`\`\n\n\n${promptTemplate.replace('${content}', text)}`
+      prompt = `参考上下文：\n\`\`\`\n${context}\n\`\`\`\n\n需要翻译的文本：\n${promptTemplate.replace('${content}', text)}`
     } else {
       // 如果没有有效上下文，使用原始模板
-      console.log('未找到有效上下文，使用原始模板') // 调试日志
       prompt = promptTemplate.replace('${content}', text)
     }
   } else {
     // 如果未启用上下文或没有提供文档/位置，使用原始模板
-    console.log('上下文功能未启用，或缺少文档/位置参数，使用原始模板') // 调试日志
     prompt = promptTemplate.replace('${content}', text)
   }
 

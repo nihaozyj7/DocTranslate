@@ -46,10 +46,6 @@ function cleanupCache(): void {
       excessCount++
     }
   }
-
-  if (expiredCount > 0 || excessCount > 0) {
-    console.log(`🐾 清理了 ${expiredCount} 个过期缓存和 ${excessCount} 个超额缓存`)
-  }
 }
 
 /**

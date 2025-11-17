@@ -38,6 +38,7 @@ exports.translateText = translateText;
 exports.forceRetranslate = forceRetranslate;
 const vscode = __importStar(require("vscode"));
 const cache_1 = require("./cache");
+const utils_1 = require("./utils");
 /**
  * 获取翻译配置
  */
@@ -51,20 +52,45 @@ function getTranslationConfig() {
         /** 手动翻译模式下，保留的翻译结果数量 */
         quantityTranslation: config.get('quantityTranslation', 5),
         /** 是否启用自动翻译功能 */
-        autoTranslate: config.get('autoTranslate', true)
+        autoTranslate: config.get('autoTranslate', true),
+        /** 是否包含上下文 */
+        includeContext: config.get('includeContext', false),
+        /** 上下文行数 */
+        contextLines: config.get('contextLines', 5),
+        /** 上下文最大长度 */
+        maxContextLength: config.get('maxContextLength', 1000)
     };
 }
 /**
  * 翻译文本（含错误处理和超时控制）
  * @param text 待翻译的文本
+ * @param document 文档对象（可选，用于上下文提取）
+ * @param position 光标位置（可选，用于上下文提取）
  * @returns 翻译后的文本或错误信息
  */
-async function translateText(text) {
-    const { baseURL, apiKey, model, promptTemplate } = getTranslationConfig();
+async function translateText(text, document, position) {
+    const config = getTranslationConfig();
+    const { baseURL, apiKey, model, promptTemplate, includeContext, contextLines, maxContextLength } = config;
     if (!baseURL || !apiKey) {
         return '❌ **未配置翻译接口**\n请在设置中填写 `baseURL` 和 `apiKey`。';
     }
-    const prompt = promptTemplate.replace('${content}', text);
+    let prompt;
+    // 如果启用了上下文功能且提供了文档和位置参数，则添加上下文
+    if (includeContext && document && position) {
+        const context = (0, utils_1.getContextAround)(document, position, contextLines, maxContextLength);
+        if (context.trim()) {
+            // 使用增强的提示词，包含上下文信息
+            prompt = `参考上下文：\n\`\`\`\n${context}\n\`\`\`\n\n需要翻译的文本：\n${promptTemplate.replace('${content}', text)}`;
+        }
+        else {
+            // 如果没有有效上下文，使用原始模板
+            prompt = promptTemplate.replace('${content}', text);
+        }
+    }
+    else {
+        // 如果未启用上下文或没有提供文档/位置，使用原始模板
+        prompt = promptTemplate.replace('${content}', text);
+    }
     // 创建 AbortController 用于请求超时控制
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
@@ -87,6 +113,7 @@ async function translateText(text) {
             }),
             signal: controller.signal // 添加信号以支持超时控制
         });
+        console.info(prompt);
         clearTimeout(timeoutId); // 请求完成，清除超时定时器
         if (!res.ok) {
             return `❌ **翻译请求失败（HTTP ${res.status}）**`;
@@ -115,9 +142,9 @@ async function translateText(text) {
 /**
  * 重新翻译文本（覆盖缓存）
  */
-async function forceRetranslate(original, hash) {
+async function forceRetranslate(original, hash, document, position) {
     const config = getTranslationConfig();
-    const result = await translateText(original);
+    const result = await translateText(original, document, position);
     const entry = {
         original,
         text: result,
