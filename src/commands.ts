@@ -4,7 +4,23 @@ import { forceRetranslate } from './translation'
 import { md5 } from './utils'
 
 /** 当前是否显示翻译内容 */
-export let showTranslated = true
+let showTranslated = true
+
+/**
+ * 获取当前是否显示翻译内容的状态
+ * @returns 是否显示翻译内容
+ */
+export function getShowTranslated(): boolean {
+  return showTranslated
+}
+
+/**
+ * 设置是否显示翻译内容的状态
+ * @param value 新的状态值
+ */
+export function setShowTranslated(value: boolean): void {
+  showTranslated = value
+}
 
 /**
  * 注册所有命令

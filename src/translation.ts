@@ -20,7 +20,9 @@ export function getTranslationConfig() {
 }
 
 /**
- * 翻译文本（含错误处理）
+ * 翻译文本（含错误处理和超时控制）
+ * @param text 待翻译的文本
+ * @returns 翻译后的文本或错误信息
  */
 export async function translateText(text: string): Promise<string> {
   const { baseURL, apiKey, model, promptTemplate } = getTranslationConfig()
@@ -30,6 +32,10 @@ export async function translateText(text: string): Promise<string> {
   }
 
   const prompt = promptTemplate.replace('${content}', text)
+
+  // 创建 AbortController 用于请求超时控制
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
 
   try {
     const res = await fetch(`${baseURL}/chat/completions`, {
@@ -47,20 +53,40 @@ export async function translateText(text: string): Promise<string> {
           },
           { role: 'user', content: prompt }
         ]
-      })
+      }),
+      signal: controller.signal // 添加信号以支持超时控制
     })
+
+    clearTimeout(timeoutId) // 请求完成，清除超时定时器
 
     if (!res.ok) {
       return `❌ **翻译请求失败（HTTP ${res.status}）**`
     }
 
     const data: any = await res.json()
-    const content = data.choices?.[0]?.message?.content?.trim()
+
+    // 增强 API 响应的类型检查
+    if (!data || !data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+      return '⚠️ **API 响应格式异常**：未找到翻译结果'
+    }
+
+    if (!data.choices[0].message || typeof data.choices[0].message.content !== 'string') {
+      return '⚠️ **API 响应格式异常**：翻译内容格式不正确'
+    }
+
+    const content = data.choices[0].message.content.trim()
 
     vscode.window.showInformationMessage('🐾 翻译完成，请重新悬停查看结果～')
 
     return content || '⚠️ 服务未返回内容'
   } catch (err) {
+    clearTimeout(timeoutId) // 发生错误，也清除超时定时器
+
+    // 检查是否是超时错误
+    if (err instanceof Error && err.name === 'AbortError') {
+      return '❌ **翻译请求超时**：请检查网络连接或API服务状态'
+    }
+
     return `❌ **翻译失败**：${String(err)}`
   }
 }
