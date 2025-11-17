@@ -2,7 +2,7 @@
 
 一款 VSCode 悬浮文档翻译插件，支持 AI 翻译悬停文本，可自定义翻译 API 和提示词。
 
-![介绍](assets/README/251116-110240.gif)
+![介绍](<assets/README/25y11m17d 22H32M40S.gif>)
 
 ## 🌟 特性
 
