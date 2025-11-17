@@ -61,6 +61,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
 
         // 仅显示缓存结果，不发起API请求
         vscode.commands.executeCommand('editor.action.showHover')
+        vscode.window.showInformationMessage(`🐾 使用已有的翻译～`)
         return
       }
 
