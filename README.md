@@ -145,17 +145,6 @@ src/
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-## 📈 更新日志
-
-### 最新版本 v0.0.11
-- 支持手动翻译模式和自动翻译模式
-- 添加缓存管理功能，支持查看、编辑、删除缓存
-- 优化代码结构，提高可维护性
-- 添加过期缓存清理机制
-
-查看完整的更新历史请见 [CHANGELOG.md](CHANGELOG.md) 文件。
-
-
 ## 🐛 问题反馈
 
 如果遇到问题或有建议，请在 [GitHub Issues](https://github.com/nihaozyj7/DocTranslate/issues) 中提交反馈。

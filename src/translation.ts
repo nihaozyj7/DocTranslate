@@ -83,8 +83,6 @@ export async function translateText(text: string, document?: vscode.TextDocument
       signal: controller.signal // 添加信号以支持超时控制
     })
 
-    console.info(prompt)
-
     clearTimeout(timeoutId) // 请求完成，清除超时定时器
 
     if (!res.ok) {
