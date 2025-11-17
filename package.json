@@ -81,6 +81,24 @@
           "default": 3000,
           "description": "插件首次启动延迟时间（毫秒），该设置确保翻译内容始终在悬浮提示的最顶部显示，如果发现翻译结果在底部，则适当调整延迟时间",
           "order": 6
+        },
+        "hoverTranslator.includeContext": {
+          "type": "boolean",
+          "default": false,
+          "description": "翻译时是否携带光标附近的上下文代码",
+          "order": 7
+        },
+        "hoverTranslator.contextLines": {
+          "type": "number",
+          "default": 5,
+          "description": "携带上下文代码的行数（光标所在行前后各 N 行）",
+          "order": 8
+        },
+        "hoverTranslator.maxContextLength": {
+          "type": "number",
+          "default": 1000,
+          "description": "携带上下文的最大字符数限制",
+          "order": 9
         }
       }
     },

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { CacheEntry } from './types'
 import { translationCache, saveCache, allowShowTranslated } from './cache'
+import { getContextAround } from './utils'
 
 /**
  * 获取翻译配置
@@ -15,23 +16,59 @@ export function getTranslationConfig() {
     /** 手动翻译模式下，保留的翻译结果数量 */
     quantityTranslation: config.get<number>('quantityTranslation', 5),
     /** 是否启用自动翻译功能 */
-    autoTranslate: config.get<boolean>('autoTranslate', true)
+    autoTranslate: config.get<boolean>('autoTranslate', true),
+    /** 是否包含上下文 */
+    includeContext: config.get<boolean>('includeContext', false),
+    /** 上下文行数 */
+    contextLines: config.get<number>('contextLines', 5),
+    /** 上下文最大长度 */
+    maxContextLength: config.get<number>('maxContextLength', 1000)
   }
 }
 
 /**
  * 翻译文本（含错误处理和超时控制）
  * @param text 待翻译的文本
+ * @param document 文档对象（可选，用于上下文提取）
+ * @param position 光标位置（可选，用于上下文提取）
  * @returns 翻译后的文本或错误信息
  */
-export async function translateText(text: string): Promise<string> {
-  const { baseURL, apiKey, model, promptTemplate } = getTranslationConfig()
+export async function translateText(text: string, document?: vscode.TextDocument, position?: vscode.Position): Promise<string> {
+  console.log('translateText 函数被调用') // 调试日志
+  const config = getTranslationConfig()
+  console.log('当前配置:', {
+    includeContext: config.includeContext,
+    contextLines: config.contextLines,
+    maxContextLength: config.maxContextLength
+  }) // 调试日志
+
+  const { baseURL, apiKey, model, promptTemplate, includeContext, contextLines, maxContextLength } = config
 
   if (!baseURL || !apiKey) {
     return '❌ **未配置翻译接口**\n请在设置中填写 `baseURL` 和 `apiKey`。'
   }
 
-  const prompt = promptTemplate.replace('${content}', text)
+  let prompt: string
+
+  console.log('参数检查:', { includeContext, hasDocument: !!document, hasPosition: !!position }) // 调试日志
+
+  // 如果启用了上下文功能且提供了文档和位置参数，则添加上下文
+  if (includeContext && document && position) {
+    const context = getContextAround(document, position, contextLines, maxContextLength)
+    if (context.trim()) {
+      // 使用增强的提示词，包含上下文信息
+      console.log('上下文翻译已启用，上下文内容:', context.substring(0, 200) + (context.length > 200 ? '...' : '')) // 调试日志
+      prompt = `参考上下文：\n\`\`\`\n${context}\n\`\`\`\n\n\n${promptTemplate.replace('${content}', text)}`
+    } else {
+      // 如果没有有效上下文，使用原始模板
+      console.log('未找到有效上下文，使用原始模板') // 调试日志
+      prompt = promptTemplate.replace('${content}', text)
+    }
+  } else {
+    // 如果未启用上下文或没有提供文档/位置，使用原始模板
+    console.log('上下文功能未启用，或缺少文档/位置参数，使用原始模板') // 调试日志
+    prompt = promptTemplate.replace('${content}', text)
+  }
 
   // 创建 AbortController 用于请求超时控制
   const controller = new AbortController()
@@ -56,6 +93,8 @@ export async function translateText(text: string): Promise<string> {
       }),
       signal: controller.signal // 添加信号以支持超时控制
     })
+
+    console.info(prompt)
 
     clearTimeout(timeoutId) // 请求完成，清除超时定时器
 
@@ -94,9 +133,9 @@ export async function translateText(text: string): Promise<string> {
 /**
  * 重新翻译文本（覆盖缓存）
  */
-export async function forceRetranslate(original: string, hash: string) {
+export async function forceRetranslate(original: string, hash: string, document?: vscode.TextDocument, position?: vscode.Position) {
   const config = getTranslationConfig()
-  const result = await translateText(original)
+  const result = await translateText(original, document, position)
 
   const entry: CacheEntry = {
     original,

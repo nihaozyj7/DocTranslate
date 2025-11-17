@@ -102,7 +102,7 @@ export function createHoverProvider() {
         if (!translating.has(hash)) {
           translating.add(hash)
 
-          translateText(original).then(result => {
+          translateText(original, document, position).then(result => {
             translating.delete(hash)
 
             // 将翻译结果保存到缓存
