@@ -54,6 +54,8 @@ ext install doctranslate.doctranslate
 - `baseURL`: `http://localhost:11434/v1`
 - `model`: `llama3` 或其他本地模型
 
+** 注意：接口需要支持openai格式，目前国内主流大模型厂商均支持该格式，建议使用非思考模型 **
+
 ## 💡 使用方法
 
 ### 基本使用
@@ -151,11 +153,6 @@ src/
 
 查看完整的更新历史请见 [CHANGELOG.md](CHANGELOG.md) 文件。
 
-## 🙏 鸣谢
-
-- VSCode API 提供的强大扩展能力
-- 阿里百炼等AI服务提供商
-- 所有贡献者和用户的支持
 
 ## 🐛 问题反馈
 
