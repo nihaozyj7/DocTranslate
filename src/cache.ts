@@ -7,6 +7,9 @@ export const CACHE_EXPIRE_TIME = 30 * 24 * 60 * 60 * 1000
 /** 翻译缓存 Map：hash → CacheEntry */
 export let translationCache = new Map<string, CacheEntry>()
 
+/** 允许显示的翻译，手动模式下开启，该翻译结果不缓存 */
+export const allowShowTranslated: string[] = []
+
 /** 防抖保存缓存 */
 let saveDebounced: (() => void) | null = null
 

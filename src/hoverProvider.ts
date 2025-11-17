@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { md5 } from './utils'
-import { translationCache, isCacheValid, saveCache } from './cache'
-import { translateText } from './translation'
+import { translationCache, isCacheValid, saveCache, allowShowTranslated } from './cache'
+import { getTranslationConfig, translateText } from './translation'
 import { showTranslated } from './commands'
 
 /** 防止 hover 递归触发的小锁 */
@@ -40,13 +40,27 @@ export function createHoverProvider() {
         const md = new vscode.MarkdownString(undefined, true)
         md.isTrusted = true
 
+        const config = getTranslationConfig()
+
         // 工具栏
         if (showTranslated) {
           md.appendMarkdown(
             `✨ **悬浮文档翻译** &nbsp;&nbsp;👉 ` +
-            `[禁用翻译](command:hoverTranslator.toggleMode) | ` +
-            `[重新翻译](command:hoverTranslator.retranslate?${encodeURIComponent(JSON.stringify([encoded]))})`
+            `[禁用翻译](command:hoverTranslator.toggleMode) | `
           )
+          // 用户开启自动翻译时，直接显示翻译并且显示重新翻译按钮
+          if (config.autoTranslate) {
+            md.appendMarkdown(`[重新翻译](command:hoverTranslator.retranslate?${encodeURIComponent(JSON.stringify([encoded]))})`)
+          }
+          // 用户关闭自动翻译时，在已点击翻译按钮时显示重新翻译按钮
+          else if (allowShowTranslated.includes(hash) && translationCache.has(hash)) {
+            md.appendMarkdown(`[重新翻译](command:hoverTranslator.retranslate?${encodeURIComponent(JSON.stringify([encoded]))})`)
+          }
+          // 用户未点击翻译按钮时，显示翻译按钮
+          else {
+            md.appendMarkdown(`[翻译](command:hoverTranslator.retranslate?${encodeURIComponent(JSON.stringify([encoded]))})`)
+            return new vscode.Hover(md)
+          }
         } else {
           md.appendMarkdown(
             `✨ **悬浮文档翻译** &nbsp;&nbsp;👉 ` +

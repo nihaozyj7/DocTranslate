@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { CacheEntry } from './types'
-import { translationCache, saveCache } from './cache'
+import { translationCache, saveCache, allowShowTranslated } from './cache'
 
 /**
  * 获取翻译配置
@@ -11,7 +11,11 @@ export function getTranslationConfig() {
     baseURL: config.get<string>('baseURL', ''),
     apiKey: config.get<string>('apiKey', ''),
     model: config.get<string>('model', ''),
-    promptTemplate: config.get<string>('promptTemplate', '请将以下文本翻译为中文：\n${content}')
+    promptTemplate: config.get<string>('promptTemplate', '请将以下文本翻译为中文：\n${content}'),
+    /** 手动翻译模式下，保留的翻译结果数量 */
+    quantityTranslation: config.get<number>('quantityTranslation', 5),
+    /** 是否启用自动翻译功能 */
+    autoTranslate: config.get<boolean>('autoTranslate', true)
   }
 }
 
@@ -65,12 +69,19 @@ export async function translateText(text: string): Promise<string> {
  * 重新翻译文本（覆盖缓存）
  */
 export async function forceRetranslate(original: string, hash: string) {
+  const config = getTranslationConfig()
   const result = await translateText(original)
 
   const entry: CacheEntry = {
     original,
     text: result,
     time: Date.now()
+  }
+
+  const length = allowShowTranslated.unshift(hash)
+  // 溢出的翻译不再显示
+  if (length > config.quantityTranslation) {
+    allowShowTranslated.splice(config.quantityTranslation, length)
   }
 
   translationCache.set(hash, entry)

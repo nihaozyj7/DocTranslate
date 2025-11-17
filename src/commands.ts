@@ -16,6 +16,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
   const toggleMode = vscode.commands.registerCommand('hoverTranslator.toggleMode', () => {
     showTranslated = !showTranslated
     context.globalState.update('showTranslated', showTranslated)
+    vscode.window.showInformationMessage(`🐾 已${showTranslated ? '启用' : '禁用'}悬浮翻译～`)
   })
 
   /** 强制重新翻译 */

@@ -2,7 +2,7 @@
   "name": "doctranslate",
   "displayName": "DocTranslate",
   "description": "在 VS Code 中悬停翻译选中的文本，支持阿里百炼、Moonshot、本地大模型等，完全自定义提示词与API地址。",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "icon": "icon.png",
   "publisher": "nihaozyj7",
   "repository": {
@@ -43,27 +43,44 @@
         "hoverTranslator.baseURL": {
           "type": "string",
           "default": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-          "description": "大模型 API 接口地址，默认使用阿里百炼接口，实际调用地址：${baseURL}/chat/completions"
+          "description": "大模型 API 接口地址，默认使用阿里百炼接口，实际调用地址：${baseURL}/chat/completions",
+          "order": 0
         },
         "hoverTranslator.apiKey": {
           "type": "string",
           "default": "",
-          "description": "API 密钥"
+          "description": "API 密钥",
+          "order": 1
         },
         "hoverTranslator.model": {
           "type": "string",
           "default": "qwen3-next-80b-a3b-instruct",
-          "description": "大模型名称"
+          "description": "大模型名称",
+          "order": 2
         },
         "hoverTranslator.promptTemplate": {
           "type": "string",
           "default": "简短解释一下：${content}",
-          "markdownDescription": "提示词模板，其中 `${content}` 表示原文内容占位符, 可自定义提示词来丰富和调整翻译效果"
+          "markdownDescription": "提示词模板，其中 `${content}` 表示原文内容占位符, 可自定义提示词来丰富和调整翻译效果",
+          "order": 3
+        },
+        "hoverTranslator.autoTranslate": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否启用自动翻译功能，关闭后需要手动点击翻译按钮",
+          "order": 4
+        },
+        "hoverTranslator.quantityTranslation": {
+          "type": "number",
+          "default": 5,
+          "description": "手动翻译模式下，保留的翻译结果数量，默认为 5，该选项在 autoTranslate === false 时生效",
+          "order": 5
         },
         "hoverTranslator.startupDelay": {
           "type": "number",
           "default": 3000,
-          "description": "插件首次启动延迟时间（毫秒），该设置确保翻译内容始终在悬浮提示的最顶部显示，如果发现翻译结果在底部，则适当调整延迟时间"
+          "description": "插件首次启动延迟时间（毫秒），该设置确保翻译内容始终在悬浮提示的最顶部显示，如果发现翻译结果在底部，则适当调整延迟时间",
+          "order": 6
         }
       }
     },
