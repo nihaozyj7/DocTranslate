@@ -102,9 +102,6 @@ export async function translateText(text: string, document?: vscode.TextDocument
 
     const content = data.choices[0].message.content.trim()
 
-    console.log('prompt:', prompt)
-    console.log('response:', content)
-
     vscode.window.showInformationMessage('🐾 翻译完成，请重新悬停查看结果～')
 
     return content || '⚠️ 服务未返回内容'
