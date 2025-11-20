@@ -50,8 +50,10 @@ export function registerCommands(context: vscode.ExtensionContext) {
       const isValidCache = isCacheValid(cacheEntry)
       const config = getTranslationConfig()
 
-      // 如果是手动翻译模式且存在有效缓存，直接使用缓存而不发起API请求
-      if (!config.autoTranslate && isValidCache && cacheEntry) {
+      // 在手动模式下，判断这是首次翻译还是重新翻译
+      // 如果 allowShowTranslated 已包含这个 hash，说明之前已经点击过翻译，这次是"重新翻译"
+      // 在这种情况下，应该强制重新翻译，而不是使用缓存
+      if (!config.autoTranslate && isValidCache && cacheEntry && !allowShowTranslated.includes(hash)) {
         // 更新允许显示翻译的列表
         const length = allowShowTranslated.unshift(hash)
         // 溢出的翻译不再显示
@@ -59,7 +61,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
           allowShowTranslated.splice(config.quantityTranslation, length)
         }
 
-        // 仅显示缓存结果，不发起API请求
+        // 仅显示缓存结果，不发起API请求（这是首次手动翻译的情况）
         vscode.commands.executeCommand('editor.action.showHover')
         vscode.window.showInformationMessage(`🐾 使用已有的翻译～`)
         return
