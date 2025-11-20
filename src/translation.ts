@@ -49,7 +49,7 @@ export async function translateText(text: string, document?: vscode.TextDocument
     const context = getContextAround(document, position, contextLines, maxContextLength)
     if (context.trim()) {
       // 使用增强的提示词，包含上下文信息
-      prompt = `参考上下文：\n\`\`\`\n${context}\n\`\`\`\n\n需要翻译的文本：\n${promptTemplate.replace('${content}', text)}`
+      prompt = `参考上下文：\n\`\`\`\n${context}\n\`\`\`\n\n${promptTemplate.replace('${content}', text)}`
     } else {
       // 如果没有有效上下文，使用原始模板
       prompt = promptTemplate.replace('${content}', text)
@@ -101,6 +101,9 @@ export async function translateText(text: string, document?: vscode.TextDocument
     }
 
     const content = data.choices[0].message.content.trim()
+
+    console.log('prompt:', prompt)
+    console.log('response:', content)
 
     vscode.window.showInformationMessage('🐾 翻译完成，请重新悬停查看结果～')
 

@@ -37,21 +37,21 @@ export function getContextAround(
   contextLines: number,
   maxContextLength: number
 ): string {
-  const startLine = Math.max(0, position.line - contextLines);
-  const endLine = Math.min(document.lineCount - 1, position.line + contextLines);
+  const startLine = Math.max(0, position.line - contextLines)
+  const endLine = Math.min(document.lineCount - 1, position.line + contextLines)
 
-  let contextLinesArray: string[] = [];
+  let contextLinesArray: string[] = []
   for (let i = startLine; i <= endLine; i++) {
-    const lineText = document.lineAt(i).text;
-    contextLinesArray.push(lineText);
+    const lineText = document.lineAt(i).text
+    contextLinesArray.push(lineText)
   }
 
-  let context = contextLinesArray.join('\n');
+  let context = contextLinesArray.join('\n')
 
   // 如果上下文长度超过限制，进行截断
   if (context.length > maxContextLength) {
-    context = context.substring(0, maxContextLength) + '... (上下文截断)';
+    context = context.substring(0, maxContextLength) + '...'
   }
 
-  return context;
+  return context
 }

@@ -198,8 +198,8 @@ suite('Utils Test Suite', () => {
     const context = getContextAround(document, position, 2, 20) // Very small limit
 
     // Should be truncated
-    assert.ok(context.length <= 20 + '... (上下文截断)'.length)
-    assert.ok(context.endsWith('... (上下文截断)'))
+    assert.ok(context.length <= 20 + '...'.length)
+    assert.ok(context.endsWith('...'))
   })
 
   test('getContextAround should return empty string for empty document', () => {
