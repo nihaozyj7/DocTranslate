@@ -13,6 +13,7 @@
 - 📋 **缓存管理**：提供可视化缓存管理界面，可查看、编辑、删除缓存内容
 - 🛠️ **手动/自动模式**：支持自动翻译和手动翻译两种模式，灵活适应不同需求
 - 🌐 **多API支持**：兼容OpenAI格式的API接口，默认使用阿里百炼
+- 📝 **上下文感知**：可选择包含光标附近的代码上下文，提高翻译准确性
 
 ## 📦 安装
 
@@ -35,34 +36,59 @@ ext install doctranslate.doctranslate
 | `baseURL` | string | `https://dashscope.aliyuncs.com/compatible-mode/v1` | API 接口地址，支持阿里百炼等OpenAI格式接口 |
 | `apiKey` | string | `""` | API 密钥 |
 | `model` | string | `qwen3-next-80b-a3b-instruct` | 使用的AI模型名称 |
-| `promptTemplate` | string | `简短解释一下：${content}` | 提示词模板，`${content}` 为原文占位符 |
-| `autoTranslate` | boolean | `true` | 是否启用自动翻译（关闭后需手动点击翻译按钮） |
-| `quantityTranslation` | number | `5` | 手动翻译模式下保留的翻译结果数量 |
-| `startupDelay` | number | `3000` | 插件启动延迟时间（毫秒），确保翻译内容显示在悬浮提示顶部 |
+| `promptTemplate` | string | `简短解释一下，不要回复其他内容：${content}` | 提示词模板，`${content}` 为原文占位符 |
+| `autoTranslate` | boolean | `false` | 是否启用自动翻译（关闭后需手动点击翻译按钮） |
+| `quantityTranslation` | number | `3` | 手动翻译模式下保留的翻译结果数量 |
+| `includeContext` | boolean | `false` | 翻译时是否携带光标附近的上下文代码 |
+| `contextLines` | number | `5` | 携带上下文代码的行数（光标所在行前后各 contextLines / 2 行） |
+| `maxContextLength` | number | `1000` | 携带上下文的最大字符数限制 |
+| `startupDelay` | number | `3000` | 插件首次启动延迟时间（毫秒），该设置确保翻译内容始终在悬浮提示的最顶部显示，如果发现翻译结果在底部，则适当增加延迟时间 |
 
 ### API 配置示例
 
-#### 阿里百炼（默认）
-- `baseURL`: `https://dashscope.aliyuncs.com/compatible-mode/v1`
-- `model`: `qwen3-next-80b-a3b-instruct`
+##### 阿里云百炼（默认）
+- baseURL: `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- model: `qwen3-next-80b-a3b-instruct`
+- 密钥申请: [https://bailian.console.aliyun.com/?tab=model#/api-key](https://bailian.console.aliyun.com/?tab=model#/api-key)
 
-#### OpenAI
-- `baseURL`: `https://api.openai.com/v1`
-- `model`: `gpt-4o` 或 `gpt-3.5-turbo`
+##### 魔搭社区（推荐，每天2000次免费调用）
+- baseURL: `https://api-inference.modelscope.cn/v1`
+- model: 根据具体模型选择
+- 密钥申请: [https://modelscope.cn/my/myaccesstoken](https://modelscope.cn/my/myaccesstoken)
 
-#### 本地 Ollama
-- `baseURL`: `http://localhost:11434/v1`
-- `model`: `llama3` 或其他本地模型
+##### 智谱开发平台
+- baseURL: `https://open.bigmodel.cn/api/paas/v4`
+- model: `glm-4` 等
+- 密钥申请: [https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys)
 
-** 注意：接口需要支持openai格式，目前国内主流大模型厂商均支持该格式，建议使用非思考模型 **
+##### 深度求索（deepseek）
+- baseURL: `https://api.deepseek.com/v1`
+- model: `deepseek-chat` 等
+- 密钥申请: [https://platform.deepseek.com/api_keys](https://platform.deepseek.com/api_keys)
+
+##### 火山引擎（豆包系列）
+- baseURL: `https://ark.cn-beijing.volces.com/api/v3`
+- model: 根据具体模型选择
+- 密钥申请: [https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=DB4II4FC](https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=DB4II4FC)
+
+##### OpenAI
+- baseURL: `https://api.openai.com/v1`
+- model: `gpt-4o` 或 `gpt-3.5-turbo`
+
+##### 本地 Ollama
+- baseURL: `http://localhost:11434/v1`
+- model: `llama3` 或其他本地模型
+
+** 注意：接口需要支持openai格式，目前国内主流大模型厂商均支持该格式，建议使用`非思考模型` **
 
 ## 💡 使用方法
 
 ### 基本使用
 1. 在代码文件中悬停鼠标到需要翻译的文本上
-2. 等待翻译结果显示（自动模式）或点击"翻译"按钮（手动模式）
+2. 点击"翻译"按钮显示翻译（默认手动模式）或等待自动显示翻译结果（自动模式）
 3. 点击"重新翻译"按钮更新翻译结果
 4. 通过"禁用翻译"/"开启翻译"切换翻译功能状态
+5. （可选）启用上下文功能可在翻译时包含周围代码，提高准确性
 
 ### 缓存管理
 1. 使用 `Ctrl+Shift+P` 打开命令面板
@@ -76,6 +102,7 @@ ext install doctranslate.doctranslate
 ### 提示词模板自定义
 可以通过 `promptTemplate` 配置项自定义翻译提示词：
 - `${content}` - 原文内容占位符
+- 默认值：`简短解释一下，不要回复其他内容：${content}`
 - 例如：`请将以下代码注释翻译成中文：${content}`
 
 ## 🛠️ 开发环境
@@ -110,12 +137,12 @@ src/
 ├── extension.ts        # 插件入口点，激活和停用逻辑
 ├── hoverProvider.ts    # 悬浮提供者，处理悬停事件和翻译显示
 ├── translation.ts      # 翻译核心逻辑，API请求和错误处理
-├── cache.ts           # 缓存管理，包括过期清理和持久化
-├── commands.ts        # 命令定义，提供翻译开关等功能
-├── types.ts           # 类型定义
-├── utils.ts           # 工具函数，如MD5哈希等
+├── cache.ts            # 缓存管理，包括过期清理和持久化
+├── commands.ts         # 命令定义，提供翻译开关等功能
+├── types.ts            # 类型定义
+├── utils.ts            # 工具函数，如MD5哈希、上下文提取等
 └── views/
-    └── cacheView.ts   # 缓存可视化管理界面
+    └── cacheView.ts    # 缓存可视化管理界面
 ```
 
 ### 主要功能实现
@@ -123,6 +150,7 @@ src/
 - **缓存机制**: 使用MD5哈希作为键值缓存翻译结果，避免重复翻译
 - **防抖处理**: 防止重复请求和界面闪烁
 - **状态管理**: 使用globalState存储用户偏好和缓存数据
+- **上下文提取**: 提取光标附近代码上下文，提升翻译准确性
 
 ## 🤝 贡献
 
